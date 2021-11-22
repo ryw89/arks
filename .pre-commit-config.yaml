@@ -1,0 +1,24 @@
+repos:
+-   repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v3.3.0
+    hooks:
+    -   id: trailing-whitespace
+    -   id: end-of-file-fixer
+    -   id: check-case-conflict
+    -   id: check-json
+    -   id: check-yaml
+    -   id: check-added-large-files
+    -   id: double-quote-string-fixer
+-   repo: https://github.com/Lucas-C/pre-commit-hooks
+    rev: v1.1.9
+    hooks:
+    -   id: forbid-crlf
+    -   id: remove-crlf
+-   repo: https://github.com/codespell-project/codespell
+    rev: v1.17.1
+    hooks:
+    -   id: codespell
+-   repo: https://github.com/doublify/pre-commit-rust
+    rev: master
+    hooks:
+    -   id: fmt
