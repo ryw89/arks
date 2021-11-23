@@ -1,7 +1,7 @@
 use colored::*;
 use flate2::read::GzDecoder;
 use std::fs::{read_to_string, File};
-use std::io::ErrorKind;
+use std::io::{self, ErrorKind, Write};
 use std::process;
 use structopt::StructOpt;
 use tar::{Archive, Entry};
@@ -65,7 +65,27 @@ fn search_entry(mut entry: Entry<GzDecoder<File>>, text: &str) {
 
     contents.lines().enumerate().for_each(|(i, line)| {
         if line.contains(text) {
-            println!("{}:{}:{}", path.red(), (i + 1).to_string().yellow(), line);
+            print!("{}:{}:", path.red(), (i + 1).to_string().yellow());
+
+            for s in line.split_inclusive(text) {
+                if s.contains(text) {
+                    let other_bit = s.split(text).collect::<Vec<&str>>()[0];
+
+                    // Check if text substring is at beginning or not
+                    let pos = s.find(text).unwrap();
+                    if pos == 0 {
+                        print!("{}", text.red());
+                        print!("{}", other_bit);
+                    } else {
+                        print!("{}", other_bit);
+                        print!("{}", text.red());
+                    }
+                } else {
+                    print!("{}", s);
+                }
+            }
+            print!("\n");
+            io::stdout().flush().unwrap();
         }
     });
 }
