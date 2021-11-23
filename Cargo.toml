@@ -5,7 +5,9 @@ authors = ["Ryan Whittingham <ryanwhittingham89@gmail.com>"]
 edition = "2021"
 
 [dependencies]
+colored = "2"
 flate2 = "1.0.22"
 mime_guess = "2.0.3"
 structopt = "0.3"
 tar = "0.4.37"
+tempfile = "3.2.0"

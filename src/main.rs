@@ -1,9 +1,11 @@
+use colored::*;
 use flate2::read::GzDecoder;
-use std::fs::File;
+use std::fs::{read_to_string, File};
 use std::io::ErrorKind;
 use std::process;
 use structopt::StructOpt;
-use tar::Archive;
+use tar::{Archive, Entry};
+use tempfile::NamedTempFile;
 
 /// Search for text within archives
 #[derive(StructOpt, Debug)]
@@ -19,7 +21,7 @@ struct Opt {
 }
 
 /// Verify the file as an archive
-fn verify_mime_type(path: &str) -> Result<(), String> {
+fn verify_as_archive(path: &str) -> Result<(), String> {
     let guess = mime_guess::from_path(path).first_raw().unwrap();
     let allowed = vec!["application/x-gzip"];
     if !allowed.iter().any(|&i| i == guess) {
@@ -50,11 +52,57 @@ fn load_file(path: &str) -> Result<File, String> {
     Ok(file)
 }
 
+fn search_entry(mut entry: Entry<GzDecoder<File>>, text: &str) {
+    // Unpack entry to the filesystem
+    let file = NamedTempFile::new().unwrap();
+    entry.unpack(&file).unwrap();
+
+    // Get entry path
+    let path = entry.path().unwrap().display().to_string();
+
+    // Read into string
+    let contents = read_to_string(&file.path()).unwrap();
+
+    contents.lines().enumerate().for_each(|(i, line)| {
+        if line.contains(text) {
+            println!("{}:{}:{}", path.red(), (i + 1).to_string().yellow(), line);
+        }
+    });
+}
+
+fn unpack_and_search(entry: Entry<GzDecoder<File>>, text: &str) {
+    // Infer MIME type
+    let path = entry.path().unwrap().display().to_string();
+    match mime_guess::from_path(&path).first_raw() {
+        None => {
+            // Occurs for directories & extensionless files
+        }
+        Some(m) => {
+            if m.starts_with("text/") {
+                search_entry(entry, text);
+            } else {
+            }
+        }
+    }
+}
+
 fn main() {
     let opt = Opt::from_args();
+
+    // First, verify file exists & and is a .gz file
     let file = load_file(&opt.file).unwrap_or_else(|e| bad_exit!(&e));
-    verify_mime_type(&opt.file).unwrap_or_else(|e| bad_exit!(&e));
+    verify_as_archive(&opt.file).unwrap_or_else(|e| bad_exit!(&e));
 
     let tar = GzDecoder::new(file);
     let mut archive = Archive::new(tar);
+
+    archive
+        .entries()
+        .unwrap_or_else(|e| bad_exit!(&e))
+        .for_each(|x| match x {
+            Ok(e) => unpack_and_search(e, &opt.text),
+            Err(_) => {
+                eprintln!("Warning: Could not extract an entry in {}", &opt.file.red());
+            }
+        });
 }
