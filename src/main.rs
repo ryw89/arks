@@ -69,7 +69,11 @@ fn search_entry(mut entry: Entry<GzDecoder<File>>, text: &str) {
 
             for s in line.split_inclusive(text) {
                 if s.contains(text) {
-                    let other_bit = s.split(text).collect::<Vec<&str>>()[0];
+                    let split = s.split(text).collect::<Vec<&str>>();
+                    if split.len() != 2 {
+                        panic!("Expected vector of length 2.");
+                    }
+                    let other_bit = split[0];
 
                     // Check if text substring is at beginning or not
                     let pos = s.find(text).unwrap();
