@@ -2,6 +2,7 @@ mod archivetypes;
 mod file_types;
 mod macros;
 mod myzip;
+mod pipe;
 mod search;
 mod targz;
 
@@ -15,6 +16,7 @@ use zip::read::ZipArchive;
 
 use crate::archivetypes::MimeType;
 use crate::myzip::*;
+use crate::pipe::reset_signal_pipe_handler;
 use crate::targz::*;
 
 /// Search for text within archives
@@ -55,6 +57,7 @@ fn load_file(path: &str) -> Result<File, String> {
 }
 
 fn main() {
+    reset_signal_pipe_handler().unwrap();
     let opt = Opt::from_args();
 
     // First, verify file exists & and is a .gz or .zip
