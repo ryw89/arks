@@ -3,6 +3,7 @@ name = "arks"
 version = "0.1.0"
 authors = ["Ryan Whittingham <ryanwhittingham89@gmail.com>"]
 description = "Search for text within archives."
+readme = "README.md"
 license = "MIT"
 edition = "2021"
 
