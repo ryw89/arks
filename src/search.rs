@@ -5,6 +5,18 @@ use tempfile::NamedTempFile;
 
 use crate::archivetypes::ArchiveEntry;
 
+pub fn check_inner_file_pattern(path: &str, pattern: Option<&String>) -> bool {
+    match pattern {
+        None => true,
+        Some(c) => {
+            if path.contains(c) {
+                return true;
+            }
+            false
+        }
+    }
+}
+
 fn make_utf8_err_str(path: &str) -> ColoredString {
     format!("Error: {} does not appear to be valid UTF-8.", path).red()
 }

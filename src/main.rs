@@ -32,6 +32,10 @@ struct Opt {
     /// Archive to search
     #[structopt(name = "FILE")]
     file: String,
+
+    /// Match on within-archive file names
+    #[structopt(short = "n", long = "inner", name = "INNER FILE PATTERN")]
+    inner: Option<String>,
 }
 
 /// Verify the file as an archive
@@ -63,6 +67,9 @@ fn main() {
     reset_signal_pipe_handler().unwrap();
     let opt = Opt::from_args();
 
+    // Config
+    let inner_config = opt.inner.clone();
+
     // First, verify file exists & and is a .gz or .zip
     let file = load_file(&opt.file).unwrap_or_else(|e| bad_exit!(&e));
     let mime_type = verify_as_archive(&opt.file).unwrap_or_else(|e| bad_exit!(&e));
@@ -71,11 +78,11 @@ fn main() {
         MimeType::Gz => {
             let tar = GzDecoder::new(file);
             let archive = Archive::new(tar);
-            unpack_and_search_targz(archive, &opt.text, &opt.file);
+            unpack_and_search_targz(archive, &opt.text, &opt.file, inner_config);
         }
         MimeType::Zip => {
             let archive = ZipArchive::new(file).unwrap();
-            unpack_and_search_zip(archive, &opt.text, &opt.file);
+            unpack_and_search_zip(archive, &opt.text, &opt.file, inner_config);
         }
     }
 }
