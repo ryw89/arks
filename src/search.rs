@@ -1,3 +1,4 @@
+use cached::proc_macro::cached;
 use colored::*;
 use std::fs::read_to_string;
 use std::io::{self, ErrorKind, Read, Write};
@@ -6,6 +7,7 @@ use tempfile::NamedTempFile;
 
 use crate::{archivetypes::ArchiveEntry, CONFIG};
 
+#[cached]
 fn get_inner_pattern() -> Option<String> {
     let guard = CONFIG.inner_pattern.lock().unwrap();
     let pattern: Option<String> = guard.clone();

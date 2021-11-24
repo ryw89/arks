@@ -8,6 +8,7 @@ license = "MIT"
 edition = "2021"
 
 [dependencies]
+cached = "0.26.2"
 colored = "2"
 flate2 = "1.0.22"
 mime_guess = "2.0.3"
