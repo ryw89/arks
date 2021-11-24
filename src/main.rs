@@ -2,6 +2,7 @@ mod archivetypes;
 mod file_types;
 mod macros;
 mod myzip;
+#[cfg(target_family = "unix")]
 mod pipe;
 mod search;
 mod targz;
@@ -16,6 +17,7 @@ use zip::read::ZipArchive;
 
 use crate::archivetypes::MimeType;
 use crate::myzip::*;
+#[cfg(target_family = "unix")]
 use crate::pipe::reset_signal_pipe_handler;
 use crate::targz::*;
 
@@ -57,6 +59,7 @@ fn load_file(path: &str) -> Result<File, String> {
 }
 
 fn main() {
+    #[cfg(target_family = "unix")]
     reset_signal_pipe_handler().unwrap();
     let opt = Opt::from_args();
 
