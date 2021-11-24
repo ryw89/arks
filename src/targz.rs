@@ -11,7 +11,7 @@ pub fn unpack_and_search_gz_entry(entry: Entry<GzDecoder<File>>, text: &str) {
     // Infer MIME type
     let path = entry.path().unwrap().display().to_string();
     if is_plain_text(&path) {
-        search_entry(ArchiveEntry::GzEntry(entry), text);
+        search_entry(ArchiveEntry::GzEntry(Box::new(entry)), text);
     }
 }
 

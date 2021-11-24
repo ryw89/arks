@@ -4,8 +4,8 @@ use tar::Entry;
 use zip::read::ZipFile;
 
 pub enum ArchiveEntry<'a> {
-    GzEntry(Entry<'a, GzDecoder<File>>),
-    ZipFile(ZipFile<'a>),
+    GzEntry(Box<Entry<'a, GzDecoder<File>>>),
+    ZipFile(Box<ZipFile<'a>>),
 }
 
 pub enum MimeType {

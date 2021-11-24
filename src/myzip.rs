@@ -16,9 +16,9 @@ where
     }
 
     for name in names.iter() {
-        if is_plain_text(&name) {
+        if is_plain_text(name) {
             let file = archive.by_name(name).unwrap();
-            search_entry(ArchiveEntry::ZipFile(file), text);
+            search_entry(ArchiveEntry::ZipFile(Box::new(file)), text);
         }
     }
 }
