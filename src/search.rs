@@ -1,9 +1,13 @@
 use colored::*;
 use std::fs::read_to_string;
-use std::io::{self, Read, Write};
+use std::io::{self, ErrorKind, Read, Write};
 use tempfile::NamedTempFile;
 
 use crate::archivetypes::ArchiveEntry;
+
+fn make_utf8_err_str(path: &str) -> ColoredString {
+    format!("Error: {} does not appear to be valid UTF-8.", path).red()
+}
 
 fn extract_entry_text_and_path(entry: ArchiveEntry) -> (String, String) {
     // Unpack entry to the filesystem
@@ -17,14 +21,34 @@ fn extract_entry_text_and_path(entry: ArchiveEntry) -> (String, String) {
             let path = e.path().unwrap().display().to_string();
 
             // Read into string
-            let contents = read_to_string(&file.path()).unwrap();
-
-            (contents, path)
+            match read_to_string(&file.path()) {
+                Ok(s) => (s, path),
+                Err(e) => match e.kind() {
+                    ErrorKind::InvalidData => {
+                        eprintln!("{}", make_utf8_err_str(&path));
+                        // While returning an empty string rather than
+                        // an Option may not be idiomatic, an empty
+                        // will string will simply just not have any
+                        // matches, which is the correct behavior in
+                        // the case of non-UTF8 data
+                        ("".to_string(), path)
+                    }
+                    _ => panic!("{}", e),
+                },
+            }
         }
         ArchiveEntry::ZipFile(mut e) => {
             let path = e.name().to_string();
             let mut contents = String::new();
-            e.read_to_string(&mut contents).unwrap();
+            match e.read_to_string(&mut contents) {
+                Ok(_) => {}
+                Err(e) => match e.kind() {
+                    ErrorKind::InvalidData => {
+                        eprintln!("{}", make_utf8_err_str(&path));
+                    }
+                    _ => panic!("{}", e),
+                },
+            }
 
             (contents, path)
         }
