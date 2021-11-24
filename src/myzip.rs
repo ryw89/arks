@@ -5,12 +5,8 @@ use crate::archivetypes::ArchiveEntry;
 use crate::file_types::is_plain_text;
 use crate::search::{check_inner_file_pattern, search_entry};
 
-pub fn unpack_and_search_zip<R>(
-    mut archive: ZipArchive<R>,
-    text: &str,
-    _path: &str,
-    inner_pattern: Option<String>,
-) where
+pub fn unpack_and_search_zip<R>(mut archive: ZipArchive<R>, text: &str, _path: &str)
+where
     R: Seek,
     R: Read,
 {
@@ -20,7 +16,7 @@ pub fn unpack_and_search_zip<R>(
     }
 
     for name in names.iter() {
-        if !check_inner_file_pattern(name, inner_pattern.as_ref()) {
+        if !check_inner_file_pattern(name) {
             continue;
         }
 

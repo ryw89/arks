@@ -1,3 +1,5 @@
+#![feature(mutex_unlock)]
+
 mod archivetypes;
 mod file_types;
 mod macros;
@@ -11,9 +13,13 @@ use flate2::read::GzDecoder;
 use std::fs::File;
 use std::io::ErrorKind;
 use std::process;
+use std::sync::Mutex;
 use structopt::StructOpt;
 use tar::Archive;
 use zip::read::ZipArchive;
+
+#[macro_use]
+extern crate lazy_static;
 
 use crate::archivetypes::MimeType;
 use crate::myzip::*;
@@ -36,6 +42,24 @@ struct Opt {
     /// Match on within-archive file names
     #[structopt(short = "n", long = "inner", name = "INNER FILE PATTERN")]
     inner: Option<String>,
+}
+
+struct Config {
+    inner_pattern: Mutex<Option<String>>,
+}
+
+impl Default for Config {
+    fn default() -> Config {
+        Config {
+            inner_pattern: Mutex::new(None),
+        }
+    }
+}
+
+lazy_static! {
+    static ref CONFIG: Config = Config {
+        ..Default::default()
+    };
 }
 
 /// Verify the file as an archive
@@ -67,8 +91,10 @@ fn main() {
     reset_signal_pipe_handler().unwrap();
     let opt = Opt::from_args();
 
-    // Config
-    let inner_config = opt.inner.clone();
+    // Write config to static
+    let mut guard = CONFIG.inner_pattern.lock().unwrap();
+    *guard = opt.inner.clone();
+    Mutex::unlock(guard);
 
     // First, verify file exists & and is a .gz or .zip
     let file = load_file(&opt.file).unwrap_or_else(|e| bad_exit!(&e));
@@ -78,11 +104,11 @@ fn main() {
         MimeType::Gz => {
             let tar = GzDecoder::new(file);
             let archive = Archive::new(tar);
-            unpack_and_search_targz(archive, &opt.text, &opt.file, inner_config);
+            unpack_and_search_targz(archive, &opt.text, &opt.file);
         }
         MimeType::Zip => {
             let archive = ZipArchive::new(file).unwrap();
-            unpack_and_search_zip(archive, &opt.text, &opt.file, inner_config);
+            unpack_and_search_zip(archive, &opt.text, &opt.file);
         }
     }
 }

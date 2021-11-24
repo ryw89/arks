@@ -23,6 +23,7 @@ version = "0.1.0"
 dependencies = [
  "colored",
  "flate2",
+ "lazy_static",
  "mime_guess",
  "nix",
  "structopt",

@@ -1,15 +1,24 @@
 use colored::*;
 use std::fs::read_to_string;
 use std::io::{self, ErrorKind, Read, Write};
+use std::sync::Mutex;
 use tempfile::NamedTempFile;
 
-use crate::archivetypes::ArchiveEntry;
+use crate::{archivetypes::ArchiveEntry, CONFIG};
 
-pub fn check_inner_file_pattern(path: &str, pattern: Option<&String>) -> bool {
+fn get_inner_pattern() -> Option<String> {
+    let guard = CONFIG.inner_pattern.lock().unwrap();
+    let pattern: Option<String> = guard.clone();
+    Mutex::unlock(guard);
+    pattern
+}
+
+pub fn check_inner_file_pattern(path: &str) -> bool {
+    let pattern = get_inner_pattern();
     match pattern {
         None => true,
         Some(c) => {
-            if path.contains(c) {
+            if path.contains(&c) {
                 return true;
             }
             false
