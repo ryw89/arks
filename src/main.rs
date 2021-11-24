@@ -7,13 +7,13 @@ mod targz;
 
 use flate2::read::GzDecoder;
 use std::fs::File;
-use std::hint::unreachable_unchecked;
 use std::io::ErrorKind;
 use std::process;
 use structopt::StructOpt;
 use tar::Archive;
 use zip::read::ZipArchive;
 
+use crate::archivetypes::MimeType;
 use crate::myzip::*;
 use crate::targz::*;
 
@@ -31,13 +31,13 @@ struct Opt {
 }
 
 /// Verify the file as an archive
-fn verify_as_archive(path: &str) -> Result<String, String> {
+fn verify_as_archive(path: &str) -> Result<MimeType, String> {
     let guess = mime_guess::from_path(path).first_raw().unwrap();
-    let allowed = vec!["application/x-gzip", "application/zip"];
-    if !allowed.iter().any(|&i| i == guess) {
-        return Err(format!("{} does not appear to be a valid archive.", path));
+    match guess {
+        "application/x-gzip" => Ok(MimeType::Gz),
+        "application/zip" => Ok(MimeType::Zip),
+        _ => Err(format!("{} does not appear to be a valid archive.", path)),
     }
-    Ok(guess.to_string())
 }
 
 /// Open a file given a path
@@ -61,20 +61,15 @@ fn main() {
     let file = load_file(&opt.file).unwrap_or_else(|e| bad_exit!(&e));
     let mime_type = verify_as_archive(&opt.file).unwrap_or_else(|e| bad_exit!(&e));
 
-    match mime_type.as_ref() {
-        "application/x-gzip" => {
+    match mime_type {
+        MimeType::Gz => {
             let tar = GzDecoder::new(file);
             let archive = Archive::new(tar);
             unpack_and_search_targz(archive, &opt.text, &opt.file);
         }
-        "application/zip" => {
+        MimeType::Zip => {
             let archive = ZipArchive::new(file).unwrap();
             unpack_and_search_zip(archive, &opt.text, &opt.file);
         }
-        _ => unsafe {
-            // Will never hit hit this branch due to the check in
-            // verify_as_archive().
-            unreachable_unchecked();
-        },
     }
 }

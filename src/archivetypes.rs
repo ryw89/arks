@@ -7,3 +7,8 @@ pub enum ArchiveEntry<'a> {
     GzEntry(Entry<'a, GzDecoder<File>>),
     ZipFile(ZipFile<'a>),
 }
+
+pub enum MimeType {
+    Gz,
+    Zip,
+}
