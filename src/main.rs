@@ -1,4 +1,5 @@
 mod archivetypes;
+mod file_types;
 mod macros;
 mod myzip;
 mod search;
