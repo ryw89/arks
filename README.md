@@ -25,6 +25,9 @@ name.
 # Installation
 
 This program is written in Rust, so you'll need the Rust toolchain.
+Additionally, some parts of the program rely on the
+[`nightly`](https://rust-lang.github.io/rustup/concepts/channels.html)
+channel.
 
 Building the program can be performed in the usual way:
 
