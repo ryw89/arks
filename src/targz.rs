@@ -22,7 +22,10 @@ pub fn unpack_and_search_targz(mut archive: Archive<GzDecoder<File>>, text: &str
     archive.entries().unwrap().for_each(|x| match x {
         Ok(e) => unpack_and_search_gz_entry(e, text),
         Err(_) => {
-            eprintln!("Warning: Could not extract an entry in {}", path.red());
+            eprintln!(
+                "{}",
+                format!("Warning: Could not extract an entry in {}", path).red()
+            );
         }
     });
 }
