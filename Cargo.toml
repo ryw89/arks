@@ -1,6 +1,6 @@
 [package]
 name = "arks"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["Ryan Whittingham <ryanwhittingham89@gmail.com>"]
 description = "Search for text within archives."
 readme = "README.md"
