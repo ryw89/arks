@@ -64,11 +64,16 @@ lazy_static! {
 
 /// Verify the file as an archive
 fn verify_as_archive(path: &str) -> Result<MimeType, String> {
-    let guess = mime_guess::from_path(path).first_raw().unwrap();
-    match guess {
-        "application/x-gzip" => Ok(MimeType::Gz),
-        "application/zip" => Ok(MimeType::Zip),
-        _ => Err(format!("{} does not appear to be a valid archive.", path)),
+    let err_msg = format!("{} does not appear to be a valid archive.", path);
+    match mime_guess::from_path(path).first_raw() {
+        None => {
+            return Err(err_msg);
+        }
+        Some(g) => match g {
+            "application/x-gzip" => Ok(MimeType::Gz),
+            "application/zip" => Ok(MimeType::Zip),
+            _ => Err(err_msg),
+        },
     }
 }
 
