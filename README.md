@@ -22,6 +22,11 @@ This would give the same output as before, but could be quicker if the
 archive contained a lot of other text files without "csv" in their
 name.
 
+You can also specify multiple file patterns by delimiting them with the
+`|` symbol. For example:
+
+`arks some_text some_file.zip -n "rb|py"`
+
 # Installation
 
 This program is written in Rust, so you'll need the Rust toolchain.
