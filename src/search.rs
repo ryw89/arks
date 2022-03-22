@@ -15,13 +15,13 @@ fn get_inner_pattern() -> Option<Vec<String>> {
 
     // A None will stay a None, so just return
     if pattern.is_none() {
-        return None;
+        pattern.as_ref()?;
     }
 
     // Otherwise, split out the string into a Vec<String>. Note that
     // the user may optional indicate multiple patterns to match on by
     // delimiting with '|'.
-    let out: Vec<String> = pattern.unwrap().split("|").map(|s| s.to_string()).collect();
+    let out: Vec<String> = pattern.unwrap().split('|').map(|s| s.to_string()).collect();
 
     Some(out)
 }
