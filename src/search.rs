@@ -8,20 +8,33 @@ use tempfile::NamedTempFile;
 use crate::{archivetypes::ArchiveEntry, CONFIG};
 
 #[cached]
-fn get_inner_pattern() -> Option<String> {
+fn get_inner_pattern() -> Option<Vec<String>> {
     let guard = CONFIG.inner_pattern.lock().unwrap();
     let pattern: Option<String> = guard.clone();
     Mutex::unlock(guard);
-    pattern
+
+    // A None will stay a None, so just return
+    if pattern.is_none() {
+        return None;
+    }
+
+    // Otherwise, split out the string into a Vec<String>. Note that
+    // the user may optional indicate multiple patterns to match on by
+    // delimiting with '|'.
+    let out: Vec<String> = pattern.unwrap().split("|").map(|s| s.to_string()).collect();
+
+    Some(out)
 }
 
 pub fn check_inner_file_pattern(path: &str) -> bool {
     let pattern = get_inner_pattern();
     match pattern {
         None => true,
-        Some(c) => {
-            if path.contains(&c) {
-                return true;
+        Some(p) => {
+            for c in p {
+                if path.contains(&c) {
+                    return true;
+                }
             }
             false
         }
