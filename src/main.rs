@@ -1,6 +1,7 @@
 #![feature(mutex_unlock)]
 
 mod archivetypes;
+mod bz2;
 mod file_types;
 mod macros;
 mod myzip;
@@ -9,6 +10,7 @@ mod pipe;
 mod search;
 mod targz;
 
+use bzip2::read::BzDecoder;
 use flate2::read::GzDecoder;
 use std::fs::File;
 use std::io::ErrorKind;
@@ -22,6 +24,7 @@ use zip::read::ZipArchive;
 extern crate lazy_static;
 
 use crate::archivetypes::MimeType;
+use crate::bz2::*;
 use crate::myzip::*;
 #[cfg(target_family = "unix")]
 use crate::pipe::reset_signal_pipe_handler;
@@ -68,6 +71,7 @@ fn verify_as_archive(path: &str) -> Result<MimeType, String> {
     match mime_guess::from_path(path).first_raw() {
         None => Err(err_msg),
         Some(g) => match g {
+            "application/x-bzip2" => Ok(MimeType::Bz2),
             "application/x-gzip" => Ok(MimeType::Gz),
             "application/zip" => Ok(MimeType::Zip),
             _ => Err(err_msg),
@@ -104,6 +108,11 @@ fn main() {
     let mime_type = verify_as_archive(&opt.file).unwrap_or_else(|e| bad_exit!(&e));
 
     match mime_type {
+        MimeType::Bz2 => {
+            let tar = BzDecoder::new(file);
+            let archive = Archive::new(tar);
+            unpack_and_search_tarbz2(archive, &opt.text, &opt.file);
+        }
         MimeType::Gz => {
             let tar = GzDecoder::new(file);
             let archive = Archive::new(tar);
