@@ -46,6 +46,6 @@ The binary will end up at `./target/release/arks`.
 
 # Supported archive types
 
-- [ ] .bz2
+- [x] .tar.bz2
 - [x] .tar.gz
 - [x] .zip
