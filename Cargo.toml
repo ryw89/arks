@@ -8,6 +8,7 @@ license = "MIT"
 edition = "2021"
 
 [dependencies]
+bzip2 = "0.4.3"
 cached = "0.26.2"
 colored = "2"
 flate2 = "1.0.22"
