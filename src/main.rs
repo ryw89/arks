@@ -1,14 +1,13 @@
 #![feature(mutex_unlock)]
 
 mod archivetypes;
-mod bz2;
 mod file_types;
 mod macros;
+mod mytar;
 mod myzip;
 #[cfg(target_family = "unix")]
 mod pipe;
 mod search;
-mod targz;
 
 use bzip2::read::BzDecoder;
 use flate2::read::GzDecoder;
@@ -24,11 +23,10 @@ use zip::read::ZipArchive;
 extern crate lazy_static;
 
 use crate::archivetypes::MimeType;
-use crate::bz2::*;
+use crate::mytar::*;
 use crate::myzip::*;
 #[cfg(target_family = "unix")]
 use crate::pipe::reset_signal_pipe_handler;
-use crate::targz::*;
 
 /// Search for text within archives
 #[derive(StructOpt, Debug)]
@@ -111,12 +109,12 @@ fn main() {
         MimeType::Bz2 => {
             let tar = BzDecoder::new(file);
             let archive = Archive::new(tar);
-            unpack_and_search_tarbz2(archive, &opt.text, &opt.file);
+            unpack_and_search_tar(archive, &opt.text, &opt.file);
         }
         MimeType::Gz => {
             let tar = GzDecoder::new(file);
             let archive = Archive::new(tar);
-            unpack_and_search_targz(archive, &opt.text, &opt.file);
+            unpack_and_search_tar(archive, &opt.text, &opt.file);
         }
         MimeType::Zip => {
             let archive = ZipArchive::new(file).unwrap();
